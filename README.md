@@ -1,2 +1,7 @@
-# structtags
-go tags helper
+# gtags
+
+parsing struct tags 
+
+## Usage
+
+```
