@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gtags"
+	// "github.com/cryptoless/chain-raw-api-server/util/gtags"
 )
 
 type NestedParams struct {
@@ -19,7 +20,7 @@ type CfgParams struct {
 func main() {
 	cfg := CfgParams{}
 	stags := gtags.ParseStructTags(cfg)
-	fmt.Println(stags.Tags("URL").Get("json").Val())
-	fmt.Println(stags.Tags("TimeOut").Get("max").Val())
-	fmt.Println(stags.Tags("AbsentField").Get("json").Val())
+	fmt.Println(stags.Field("URL").Get("json").Val())
+	fmt.Println(stags.Field("TimeOut").Get("max").Val())
+	fmt.Println(stags.Field("AbsentField").Get("json").Val())
 }

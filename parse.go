@@ -4,12 +4,26 @@ import (
 	"reflect"
 )
 
+var AliaseTag string = "json"
+
 func ParseStructTags(obj interface{}) *StructTags {
 	typ := reflect.TypeOf(obj)
+	val := reflect.ValueOf(obj)
 	if typ.Kind() == reflect.Ptr {
 		typ = typ.Elem()
+		val = reflect.ValueOf(obj).Elem()
 	}
-	return parseStructType(typ)
+	//  else {
+	// 	val = reflect.ValueOf(obj)
+	// }
+	// for i := 0; i < val.NumField(); i++ {
+	// 	field := val.Field(i)
+	// 	if field.Type() == reflect.T {
+	// 		fmt.Println(field.Type())
+	// 	}
+	// }
+
+	return parseStructType(val, false)
 }
 
 func indirectType(typ reflect.Type) reflect.Type {
@@ -17,40 +31,4 @@ func indirectType(typ reflect.Type) reflect.Type {
 		typ = typ.Elem()
 	}
 	return typ
-}
-
-func parseStructType(typ reflect.Type) *StructTags {
-	typ = indirectType(typ)
-
-	stags := &StructTags{
-		fieldtags:     map[string]*Tags{},
-		anonestedtags: map[string]*Tags{},
-		nestedtags:    map[string]*StructTags{},
-	}
-	///
-	for i := 0; i < typ.NumField(); i++ {
-		field := typ.Field(i)
-		///
-		if field.Type.Kind() == reflect.Struct {
-			if field.Name == field.Type.Name() {
-				//anonymous
-				anotags := parseStructType(field.Type)
-				for k, v := range anotags.fieldtags {
-					stags.anonestedtags[k] = v
-				}
-			} else {
-				//nested
-				nesttags := parseStructType(field.Type)
-				stags.nestedtags[field.Name] = nesttags
-			}
-		} else {
-			tags := parseTags(string(field.Tag))
-			stags.fieldtags[field.Name] = tags
-		}
-	}
-
-	// typ.Name()
-	// typ.PkgPath()
-	// typ.Kind().String()
-	return stags
 }
