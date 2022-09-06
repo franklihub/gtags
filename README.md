@@ -9,7 +9,8 @@ package main
 
 import (
 	"fmt"
-	"gtags"
+
+	"github.com/franklihub/gtags"
 )
 
 type NestedParams struct {

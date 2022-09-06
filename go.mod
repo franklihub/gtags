@@ -1,4 +1,4 @@
-module gtags
+module github.com/franklihub/gtags
 
 go 1.18
 
