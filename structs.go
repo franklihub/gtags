@@ -9,6 +9,7 @@ type Structs struct {
 	alias        string
 	tags         *Tags
 	hasUnmarshal bool
+	isAnon       bool
 	///
 	fields     map[string]*Field
 	alias2name map[string]string
@@ -103,6 +104,7 @@ func (a *Structs) addStruct(structfield reflect.StructField) *Structs {
 		alias:        tags.Get(AliasTag).Val(),
 		tags:         tags,
 		hasUnmarshal: has,
+		isAnon:       isAnon,
 		///
 		//contain a struct that has UnmarshalJson method
 		fields:     map[string]*Field{},
