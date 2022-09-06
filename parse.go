@@ -4,26 +4,11 @@ import (
 	"reflect"
 )
 
-var AliaseTag string = "json"
-
-func ParseStructTags(obj interface{}) *StructTags {
+func ParseStructTags(obj interface{}) *Structs {
 	typ := reflect.TypeOf(obj)
-	val := reflect.ValueOf(obj)
-	if typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-		val = reflect.ValueOf(obj).Elem()
-	}
-	//  else {
-	// 	val = reflect.ValueOf(obj)
-	// }
-	// for i := 0; i < val.NumField(); i++ {
-	// 	field := val.Field(i)
-	// 	if field.Type() == reflect.T {
-	// 		fmt.Println(field.Type())
-	// 	}
-	// }
+	typ = indirectType(typ)
 
-	return parseStructType(val, false)
+	return parseType(typ)
 }
 
 func indirectType(typ reflect.Type) reflect.Type {

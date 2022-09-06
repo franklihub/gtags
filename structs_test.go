@@ -8,8 +8,8 @@ import (
 
 type HeartCfg int
 type NestedParams struct {
-	URL     string `p:"host" `
-	TimeOut int    `p:"time_out" d:"10" max:"1000" min:"10"`
+	URL     string `json:"host" `
+	TimeOut int    `json:"time_out" d:"10" max:"1000" min:"10"`
 }
 type CfgParams struct {
 	NestedParams
@@ -22,24 +22,25 @@ type CfgParams struct {
 }
 
 func Test_Parse(t *testing.T) {
-	AliaseTag = "p"
 	//
 	stags := ParseStructTags(CfgParams{})
-	conn := stags.Nested("Conn")
-	tags := conn.Field("URL")
-	tag := tags.Get("p")
-	assert.Equal(t, "p", tag.Key())
+	conn := stags.NestedByName("Conn")
+	field := conn.FieldByName("URL")
+	tag := field.Tags().Get("json")
+	assert.Equal(t, "json", tag.Key())
 	assert.Equal(t, "host", tag.Val())
 
-	tags = conn.Field("TimeOut")
-	assert.Equal(t, "p", tags.Get("p").Key())
-	assert.Equal(t, "time_out", tags.Get("p").Val())
+	field = conn.FieldByName("TimeOut")
+	tags := field.Tags()
+	assert.Equal(t, "json", tags.Get("json").Key())
+	assert.Equal(t, "time_out", tags.Get("json").Val())
 	assert.Equal(t, "1000", tags.Get("max").Val())
 	assert.Equal(t, "10", tags.Get("d").Val())
 	assert.Equal(t, "10", tags.Get("min").Val())
 
-	tags = conn.Field("Absent")
-	assert.Equal(t, "", tags.Get("p").Key())
+	field = conn.FieldByName("Absent")
+	tags = field.Tags()
+	assert.Equal(t, "", tags.Get("json").Key())
 	// assert.Equal(t, `p:"username,omitempty" toml:"username" yaml:"username,omitempty"`, tag.String())
 	// tag = NewSfTag()
 	// tag.Parse(tags["Password"])

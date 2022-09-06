@@ -20,7 +20,7 @@ type CfgParams struct {
 func main() {
 	cfg := CfgParams{}
 	stags := gtags.ParseStructTags(cfg)
-	fmt.Println(stags.Field("URL").Get("json").Val())
-	fmt.Println(stags.Field("TimeOut").Get("max").Val())
-	fmt.Println(stags.Field("AbsentField").Get("json").Val())
+	fmt.Println(stags.FieldByName("URL").Tags().Get("json").Val())
+	fmt.Println(stags.FieldByName("TimeOut").Tags().Get("max").Val())
+	fmt.Println(stags.FieldByName("AbsentField").Tags().Get("json").Val())
 }
