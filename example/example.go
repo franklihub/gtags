@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"gtags"
-	// "github.com/cryptoless/chain-raw-api-server/util/gtags"
 )
 
 type NestedParams struct {

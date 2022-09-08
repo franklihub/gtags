@@ -5,14 +5,27 @@ import "reflect"
 ///
 var AliasTag = "json"
 
+type FieldKind int
+
+const (
+	StringField FieldKind = iota
+	IntField
+	FloatField
+	StructField
+	SliceField
+	MapField
+	InterfaceField
+)
+
 type Field struct {
 	fieldName string
 	fieldType reflect.Type
+	alias     string
+	//
+	tags *Tags
 	//
 	isAnon bool
-	//
-	alias string
-	tags  *Tags
+	kind   FieldKind
 }
 
 func parseField(structfield reflect.StructField) *Field {

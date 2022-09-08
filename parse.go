@@ -8,7 +8,7 @@ func ParseStructTags(obj interface{}) *Structs {
 	typ := reflect.TypeOf(obj)
 	typ = indirectType(typ)
 
-	return parseType(typ)
+	return parseStructType(typ)
 }
 
 func indirectType(typ reflect.Type) reflect.Type {
