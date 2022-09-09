@@ -10,12 +10,20 @@ type Structs struct {
 	tags         *Tags
 	hasUnmarshal bool
 	isAnon       bool
+	index        []int
 	///
 	fields     map[string]*Field
 	name2alias map[string]string
 	///
 	nesteds          map[string]*Structs
 	nestedname2alias map[string]string
+}
+
+func (a *Structs) Index() []int {
+	return a.index
+}
+func (a *Structs) HasUnmarshal() bool {
+	return a.hasUnmarshal
 }
 
 func (a *Structs) Name() string {
@@ -96,6 +104,29 @@ func parseStructType(typ reflect.Type) *Structs {
 	return s
 }
 
+///
+///
+
+func (a *Structs) addField(structfield reflect.StructField) {
+
+	switch structfield.Type.Kind() {
+	case reflect.Struct:
+		a.addStruct(structfield)
+	case reflect.Pointer:
+		// a.add(structfield)
+	case reflect.Array, reflect.Slice:
+		panic("not supply slice/array")
+	case reflect.Map:
+		panic("not supply Map")
+	case reflect.Chan:
+		panic("not supply Chan")
+	case reflect.Func:
+		panic("not supply Func")
+	default:
+		a.addObj(structfield)
+	}
+}
+
 func (a *Structs) addAnonStruct(structfield reflect.StructField) {
 	typ := structfield.Type
 	for i := 0; i < typ.NumField(); i++ {
@@ -103,16 +134,18 @@ func (a *Structs) addAnonStruct(structfield reflect.StructField) {
 		a.addField(field)
 	}
 }
+
 func (a *Structs) addStruct(structfield reflect.StructField) {
 	tags := parseTags(string(structfield.Tag))
-	_, has := structfield.Type.MethodByName("UnmarshalJson")
+	_, has := structfield.Type.MethodByName("UnmarshalJSON")
 	///
 	s := &Structs{
 		name:         structfield.Name,
 		alias:        tags.Get(AliasTag).Val(),
 		tags:         tags,
 		hasUnmarshal: has,
-		isAnon:       false,
+		isAnon:       structfield.Anonymous,
+		index:        append(a.index[:], structfield.Index...),
 		///
 		//contain a struct that has UnmarshalJson method
 		fields:     map[string]*Field{},
@@ -132,36 +165,30 @@ func (a *Structs) addStruct(structfield reflect.StructField) {
 	a.nestedname2alias[s.alias] = s.name
 }
 
-func (a *Structs) addField(structfield reflect.StructField) {
-	///
-	switch structfield.Type.Kind() {
-	case reflect.Struct:
-		if structfield.Anonymous {
-			a.addAnonStruct(structfield)
-		} else {
-			a.addStruct(structfield)
-		}
-	case reflect.Pointer:
-		a.add(structfield)
-	case reflect.Array, reflect.Slice:
-		panic("not supply slice/array")
-	case reflect.Map:
-		panic("not supply Map")
-	case reflect.Chan:
-		panic("not supply Chan")
-	case reflect.Func:
-		panic("not supply Func")
-	default:
-		a.add(structfield)
-		//
-	}
-}
-
-func (a *Structs) add(field reflect.StructField) *Field {
-	f := parseField(field)
+func (a *Structs) addObj(field reflect.StructField) *Field {
+	f := a.parseField(field)
 	a.fields[f.Name()] = f
 	///
 	a.name2alias[f.Alias()] = f.Name()
 	a.name2alias[f.Name()] = f.Alias()
 	return f
+}
+
+func (a *Structs) parseField(structfield reflect.StructField) *Field {
+
+	field := &Field{
+		fieldName:  structfield.Name,
+		fieldType:  structfield.Type,
+		fieldIndex: structfield.Index[len(structfield.Index)-1],
+		isAnon:     structfield.Anonymous,
+		index:      append(a.index[:], structfield.Index...),
+	}
+	///
+	field.tags = parseTags(string(structfield.Tag))
+	field.alias = field.tags.Get(AliasTag).Val()
+	_, has := structfield.Type.MethodByName("UnmarshalJSON")
+	field.hasUnmarshal = has
+	///
+
+	return field
 }

@@ -7,39 +7,38 @@ var AliasTag = "json"
 
 type FieldKind int
 
-const (
-	StringField FieldKind = iota
-	IntField
-	FloatField
-	StructField
-	SliceField
-	MapField
-	InterfaceField
-)
+// const (
+// 	StringField FieldKind = iota
+// 	IntField
+// 	FloatField
+// 	StructField
+// 	SliceField
+// 	MapField
+// 	InterfaceField
+// )
 
 type Field struct {
-	fieldName string
-	fieldType reflect.Type
-	alias     string
+	fieldName    string
+	fieldType    reflect.Type
+	fieldIndex   int
+	isAnon       bool
+	hasUnmarshal bool
 	//
-	tags *Tags
+	alias string
+	tags  *Tags
 	//
-	isAnon bool
-	kind   FieldKind
+	index []int
 }
 
-func parseField(structfield reflect.StructField) *Field {
+func (a *Field) HasUnmarshal() bool {
+	return a.hasUnmarshal
+}
 
-	field := &Field{
-		fieldName: structfield.Name,
-		fieldType: structfield.Type,
-		//todo: anonymous
-	}
-	///
-	field.tags = parseTags(string(structfield.Tag))
-	field.alias = field.tags.Get(AliasTag).Val()
-	///
-	return field
+func (a *Field) Index() []int {
+	return a.index
+}
+func (a *Field) FieldType() reflect.Type {
+	return a.fieldType
 }
 
 func (a *Field) Name() string {
