@@ -59,9 +59,13 @@ func (a *Structs) Field(name string) *Field {
 	f := a.FieldByName(name)
 	///
 	if f == nil {
-		name = a.namealias(name)
-		f = a.FieldByName(name)
-		return f
+		for _, n := range a.AnonNames() {
+			anon := a.AnonByName(n)
+			f = anon.FieldByName(name)
+			if f != nil {
+				return f
+			}
+		}
 	}
 
 	return f
@@ -70,16 +74,14 @@ func (a *Structs) Field(name string) *Field {
 ////
 func (a *Structs) FieldNames() []string {
 	///
-	size := len(a.fields) + len(a.anons)
-	names := make([]string, size)
-	pos := 0
+	names := []string{}
 	for k, _ := range a.fields {
-		names[pos] = k
-		pos += 1
+		names = append(names, k)
 	}
-	for k, _ := range a.anons {
-		names[pos] = k
-		pos += 1
+	for _, s := range a.anons {
+		for _, k := range s.FieldNames() {
+			names = append(names, k)
+		}
 	}
 	return names
 }
