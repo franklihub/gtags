@@ -10,13 +10,14 @@ import (
 
 type HeartCfg int
 type NestedParams struct {
-	Host    string `json:"host" `
+	Host    string `json:"nested_host" `
 	TimeOut int    `json:"time_out" d:"10" max:"1000" min:"10"`
 }
 type CfgParams struct {
+	Host    string `json:"host" v:"required"`
+	TimeOut int    `json:"time_out" d:"10" max:"1000" min:"10"`
 	NestedParams
 	Conn     NestedParams `json:"conn"`
-	Host     string       `json:"host" v:"required"`
 	Port     int          `json:"port,omitempty"`
 	Username string       `json:"username,omitempty" v:"required" d:"user"`
 	Password string       `json:"password" v:"required"`
