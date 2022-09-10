@@ -17,6 +17,9 @@ type Structs struct {
 	///
 	nesteds          map[string]*Structs
 	nestedname2alias map[string]string
+	//
+	anons      map[string]*Structs
+	anon2alias map[string]string
 }
 
 func (a *Structs) Index() []int {
@@ -37,24 +40,44 @@ func (a *Structs) IsAnon() bool {
 	return a.isAnon
 }
 
-func (a *Structs) NestedNames() []string {
+///
+func (a *Structs) namealias(name string) string {
+	if v, ok := a.name2alias[name]; ok {
+		return v
+	}
+	for _, s := range a.anons {
+		if v, ok := s.name2alias[name]; ok {
+			return v
+		}
+	}
+	return name
+}
+func (a *Structs) Field(name string) *Field {
+	if a == nil {
+		return nil
+	}
+	f := a.FieldByName(name)
 	///
-	size := len(a.nesteds)
-	names := make([]string, size)
-	pos := 0
-	for k, _ := range a.nesteds {
-		names[pos] = k
-		pos += 1
+	if f == nil {
+		name = a.namealias(name)
+		f = a.FieldByName(name)
+		return f
 	}
 
-	return names
+	return f
 }
+
+////
 func (a *Structs) FieldNames() []string {
 	///
-	size := len(a.fields)
+	size := len(a.fields) + len(a.anons)
 	names := make([]string, size)
 	pos := 0
 	for k, _ := range a.fields {
+		names[pos] = k
+		pos += 1
+	}
+	for k, _ := range a.anons {
 		names[pos] = k
 		pos += 1
 	}
@@ -67,6 +90,11 @@ func (a *Structs) FieldByName(fieldname string) *Field {
 	}
 	if v, ok := a.fields[fieldname]; ok {
 		return v
+	}
+	for _, s := range a.anons {
+		if v, ok := s.fields[fieldname]; ok {
+			return v
+		}
 	}
 
 	return nil
@@ -81,7 +109,40 @@ func (a *Structs) NestedByName(nestedfield string) *Structs {
 	return a.nesteds[nestedfield]
 }
 
+func (a *Structs) NestedNames() []string {
+	///
+	size := len(a.nesteds)
+	names := make([]string, size)
+	pos := 0
+	for k, _ := range a.nesteds {
+		names[pos] = k
+		pos += 1
+	}
+
+	return names
+}
+
 ///
+func (a *Structs) AnonByName(anonname string) *Structs {
+	if a == nil {
+		return nil
+	}
+	return a.anons[anonname]
+}
+
+func (a *Structs) AnonNames() []string {
+	///
+	size := len(a.anons)
+	names := make([]string, size)
+	pos := 0
+	for k, _ := range a.anons {
+		names[pos] = k
+		pos += 1
+	}
+
+	return names
+}
+
 ////
 
 ///notice: must be elem
@@ -96,10 +157,13 @@ func parseStructType(typ reflect.Type) *Structs {
 		///
 		nesteds:          map[string]*Structs{},
 		nestedname2alias: map[string]string{},
+		//
+		anons:      map[string]*Structs{},
+		anon2alias: map[string]string{},
 	}
 	for i := 0; i < typ.NumField(); i++ {
 		structfield := typ.Field(i)
-		s.addField(structfield)
+		s.addStructField(structfield)
 	}
 	return s
 }
@@ -107,11 +171,20 @@ func parseStructType(typ reflect.Type) *Structs {
 ///
 ///
 
-func (a *Structs) addField(structfield reflect.StructField) {
+func (a *Structs) addStructField(structfield reflect.StructField) {
 
 	switch structfield.Type.Kind() {
 	case reflect.Struct:
-		a.addStruct(structfield)
+		s := a.parseStruct(structfield)
+		if structfield.Anonymous {
+			a.anons[structfield.Name] = s
+			a.anon2alias[s.name] = s.alias
+			a.anon2alias[s.alias] = s.name
+		} else {
+			a.nesteds[structfield.Name] = s
+			a.nestedname2alias[s.name] = s.alias
+			a.nestedname2alias[s.alias] = s.name
+		}
 	case reflect.Pointer:
 		// a.add(structfield)
 	case reflect.Array, reflect.Slice:
@@ -123,19 +196,11 @@ func (a *Structs) addField(structfield reflect.StructField) {
 	case reflect.Func:
 		panic("not supply Func")
 	default:
-		a.addObj(structfield)
+		a.addField(structfield)
 	}
 }
 
-func (a *Structs) addAnonStruct(structfield reflect.StructField) {
-	typ := structfield.Type
-	for i := 0; i < typ.NumField(); i++ {
-		field := typ.Field(i)
-		a.addField(field)
-	}
-}
-
-func (a *Structs) addStruct(structfield reflect.StructField) {
+func (a *Structs) parseStruct(structfield reflect.StructField) *Structs {
 	tags := parseTags(string(structfield.Tag))
 	_, has := structfield.Type.MethodByName("UnmarshalJSON")
 	///
@@ -154,41 +219,33 @@ func (a *Structs) addStruct(structfield reflect.StructField) {
 		///
 		nesteds:          map[string]*Structs{},
 		nestedname2alias: map[string]string{},
+		//
+		anons:      map[string]*Structs{},
+		anon2alias: map[string]string{},
 	}
 	typ := structfield.Type
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
-		s.addField(field)
+		s.addStructField(field)
 	}
-	a.nesteds[structfield.Name] = s
-	a.nestedname2alias[s.name] = s.alias
-	a.nestedname2alias[s.alias] = s.name
+
+	return s
 }
 
-func (a *Structs) addObj(field reflect.StructField) *Field {
-	f := a.parseField(field)
+func (a *Structs) addField(structfield reflect.StructField) {
+	f := &Field{
+		fieldName:  structfield.Name,
+		fieldType:  structfield.Type,
+		isAnon:     structfield.Anonymous,
+		fieldIndex: append(a.index[:], structfield.Index...),
+	}
+	///
+	f.tags = parseTags(string(structfield.Tag))
+	f.alias = f.tags.Get(AliasTag).Val()
+	_, has := structfield.Type.MethodByName("UnmarshalJSON")
+	f.hasUnmarshal = has
 	a.fields[f.Name()] = f
 	///
 	a.name2alias[f.Alias()] = f.Name()
 	a.name2alias[f.Name()] = f.Alias()
-	return f
-}
-
-func (a *Structs) parseField(structfield reflect.StructField) *Field {
-
-	field := &Field{
-		fieldName:  structfield.Name,
-		fieldType:  structfield.Type,
-		fieldIndex: structfield.Index[len(structfield.Index)-1],
-		isAnon:     structfield.Anonymous,
-		index:      append(a.index[:], structfield.Index...),
-	}
-	///
-	field.tags = parseTags(string(structfield.Tag))
-	field.alias = field.tags.Get(AliasTag).Val()
-	_, has := structfield.Type.MethodByName("UnmarshalJSON")
-	field.hasUnmarshal = has
-	///
-
-	return field
 }

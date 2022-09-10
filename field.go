@@ -20,14 +20,13 @@ type FieldKind int
 type Field struct {
 	fieldName    string
 	fieldType    reflect.Type
-	fieldIndex   int
+	fieldIndex   []int
 	isAnon       bool
 	hasUnmarshal bool
 	//
 	alias string
 	tags  *Tags
 	//
-	index []int
 }
 
 func (a *Field) HasUnmarshal() bool {
@@ -35,7 +34,7 @@ func (a *Field) HasUnmarshal() bool {
 }
 
 func (a *Field) Index() []int {
-	return a.index
+	return a.fieldIndex
 }
 func (a *Field) FieldType() reflect.Type {
 	return a.fieldType

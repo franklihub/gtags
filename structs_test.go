@@ -1,6 +1,8 @@
 package gtags
 
 import (
+	"encoding/json"
+	"fmt"
 	"testing"
 
 	"gotest.tools/assert"
@@ -8,7 +10,7 @@ import (
 
 type HeartCfg int
 type NestedParams struct {
-	URL     string `json:"host" `
+	Host    string `json:"host" `
 	TimeOut int    `json:"time_out" d:"10" max:"1000" min:"10"`
 }
 type CfgParams struct {
@@ -23,14 +25,27 @@ type CfgParams struct {
 
 func Test_Parse(t *testing.T) {
 	//
-	stags := ParseStructTags(CfgParams{})
-	conn := stags.NestedByName("Conn")
-	field := conn.FieldByName("URL")
-	tag := field.Tags().Get("json")
+	cfg := &CfgParams{
+		NestedParams: NestedParams{
+			Host: "nested_host",
+		},
+		Host: "host",
+	}
+	d, _ := json.Marshal(cfg)
+	fmt.Println(string(d))
+	stags := ParseStructTags(cfg)
+	tag := stags.FieldByName("Host").Tags().Get("json")
 	assert.Equal(t, "json", tag.Key())
 	assert.Equal(t, "host", tag.Val())
+	///
+	tag = stags.AnonByName("NestedParams").FieldByName("Host").Tags().Get("json")
+	assert.Equal(t, "nested_host", tag.Val())
+	//todo: nested field
+	// tag = stags.Field("nested_host").Tags().Get("json")
+	// assert.Equal(t, "nested_host", tag.Val())
 
-	field = conn.FieldByName("TimeOut")
+	conn := stags.NestedByName("Conn")
+	field := conn.FieldByName("TimeOut")
 	tags := field.Tags()
 	assert.Equal(t, "json", tags.Get("json").Key())
 	assert.Equal(t, "time_out", tags.Get("json").Val())
