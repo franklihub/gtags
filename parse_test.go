@@ -24,7 +24,7 @@ type CfgParams struct {
 	Heart    HeartCfg     `json:"heart" d:"allways"`
 }
 
-func Test_Parse(t *testing.T) {
+func Test_ParseTag(t *testing.T) {
 	//
 	cfg := &CfgParams{
 		NestedParams: NestedParams{
@@ -39,8 +39,42 @@ func Test_Parse(t *testing.T) {
 	assert.Equal(t, "json", tag.Key())
 	assert.Equal(t, "host", tag.Val())
 	///
-	tag = stags.AnonByName("NestedParams").FieldByName("Host").Tags().Get("json")
+	assert.Equal(t, stags.FieldByName("NestedParams") == nil, true)
+	tag = stags.FieldByName("nested_host").Tags().Get("json")
 	assert.Equal(t, "nested_host", tag.Val())
+	//todo: nested field
+	// tag = stags.Field("nested_host").Tags().Get("json")
+	// assert.Equal(t, "nested_host", tag.Val())
+
+	conn := stags.NestedByName("Conn")
+	field := conn.FieldByName("TimeOut")
+	tags := field.Tags()
+	assert.Equal(t, "json", tags.Get("json").Key())
+	assert.Equal(t, "time_out", tags.Get("json").Val())
+	assert.Equal(t, "1000", tags.Get("max").Val())
+	assert.Equal(t, "10", tags.Get("d").Val())
+	assert.Equal(t, "10", tags.Get("min").Val())
+
+	field = conn.FieldByName("Absent")
+	assert.Equal(t, field == nil, true)
+
+}
+
+func Test_ParseStructTag(t *testing.T) {
+	//
+	cfg := &CfgParams{
+		NestedParams: NestedParams{
+			Host: "nested_host",
+		},
+		Host: "host",
+	}
+	d, _ := json.Marshal(cfg)
+	fmt.Println(string(d))
+	stags := ParseStructTags(cfg)
+	tag := stags.FieldByName("Host").Tags().Get("json")
+	assert.Equal(t, "json", tag.Key())
+	assert.Equal(t, "host", tag.Val())
+	///
 	//todo: nested field
 	// tag = stags.Field("nested_host").Tags().Get("json")
 	// assert.Equal(t, "nested_host", tag.Val())
@@ -57,9 +91,24 @@ func Test_Parse(t *testing.T) {
 	field = conn.FieldByName("Absent")
 	tags = field.Tags()
 	assert.Equal(t, "", tags.Get("json").Key())
-	// assert.Equal(t, `p:"username,omitempty" toml:"username" yaml:"username,omitempty"`, tag.String())
-	// tag = NewSfTag()
-	// tag.Parse(tags["Password"])
-	// assert.Equal(t, "password", tag.Get("yaml"))
-	// assert.Equal(t, `p:"password" toml:"password" yaml:"password"`, tag.String())
+
+}
+
+///
+func Test_Field_index(t *testing.T) {
+	stags := ParseStructTags(&CfgParams{})
+	///
+	for _, f := range stags.Fields() {
+		i := len(f.Index())
+		assert.Equal(t, i, 1)
+	}
+	///
+	for _, nested := range stags.Nesteds() {
+		i := len(nested.Index())
+		assert.Equal(t, i, 1)
+		for _, f := range nested.Fields() {
+			i := len(f.Index())
+			assert.Equal(t, i, 2)
+		}
+	}
 }

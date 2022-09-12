@@ -4,12 +4,17 @@ import (
 	"reflect"
 )
 
-func ParseStructTags(obj interface{}) *Structs {
+func ParseStructTags(obj interface{}) *Field {
 	typ := reflect.TypeOf(obj)
 	typ = indirectType(typ)
 
-	return parseStructType(typ)
+	return ParseStructType(typ)
+	// return parseStructType(typ)
 }
+
+// func parseStruct(typ reflect.Type) *Field {
+
+// }
 
 func indirectType(typ reflect.Type) reflect.Type {
 	if typ.Kind() == reflect.Ptr {
