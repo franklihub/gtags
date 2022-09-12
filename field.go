@@ -8,13 +8,14 @@ var AliasTag = "json"
 type FieldKind int
 
 type Field struct {
-	fieldName    string
-	fieldType    reflect.Type
-	fieldIndex   []int
-	isAnon       bool
-	hasUnmarshal bool
-	alias        string
-	tags         *Tags
+	fieldName     string
+	fieldType     reflect.Type
+	fieldTypeName string
+	fieldIndex    []int
+	isAnon        bool
+	hasUnmarshal  bool
+	alias         string
+	tags          *Tags
 	//
 	subFields []*Field
 }

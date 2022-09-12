@@ -1,6 +1,8 @@
 package gtags
 
-import "reflect"
+import (
+	"reflect"
+)
 
 func ParseStructType(typ reflect.Type) *Field {
 	f := newField(typ)
@@ -19,12 +21,13 @@ func ParseStructField(structfield reflect.StructField) *Field {
 	f.fieldType = structfield.Type
 	f.isAnon = structfield.Anonymous
 	f.fieldIndex = structfield.Index
+	f.fieldTypeName = structfield.Type.Name()
 	///
 	f.tags = parseTags(string(structfield.Tag))
 	f.alias = f.tags.Get(AliasTag).Val()
+	// UnmarshalJSON
 	_, has := structfield.Type.MethodByName("UnmarshalJSON")
 	f.hasUnmarshal = has
-	//
 	f.parseType(structfield.Type)
 	return f
 }
