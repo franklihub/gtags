@@ -26,7 +26,8 @@ func ParseStructField(structfield reflect.StructField) *Field {
 	f.tags = parseTags(string(structfield.Tag))
 	f.alias = f.tags.Get(AliasTag).Val()
 	// UnmarshalJSON
-	_, has := structfield.Type.MethodByName("UnmarshalJSON")
+	// _, has := structfield.Type.MethodByName("UnmarshalJSON")
+	has := TypMethod(structfield.Type, "UnmarshalJSON")
 	f.hasUnmarshal = has
 	f.parseType(structfield.Type)
 	return f

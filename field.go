@@ -21,11 +21,17 @@ type Field struct {
 }
 
 ///
+//todo: contain anonfields
 func (a *Field) Fields() []*Field {
 	fs := []*Field{}
 	for _, f := range a.subFields {
-		if f.IsSlice() || f.IsStruct() {
+		if f.IsStruct() {
 			continue
+		}
+		if f.IsSlice() {
+			if len(f.subFields) > 0 {
+				continue
+			}
 		}
 		///
 		fs = append(fs, f)

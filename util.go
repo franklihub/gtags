@@ -5,6 +5,30 @@ import (
 	"strconv"
 )
 
+func TypMethod(typ reflect.Type, method string) bool {
+	ok := ptrMethod(typ, method)
+	if !ok {
+		ok = valMethod(typ, method)
+	}
+	return ok
+}
+
+//
+func valMethod(typ reflect.Type, method string) bool {
+	if typ.Kind() == reflect.Pointer {
+		typ = typ.Elem()
+	}
+	_, ok := typ.MethodByName(method)
+	return ok
+}
+func ptrMethod(typ reflect.Type, method string) bool {
+	if typ.Kind() != reflect.Pointer {
+		typ = reflect.PtrTo(typ)
+	}
+	_, ok := typ.MethodByName(method)
+	return ok
+}
+
 func formatValue(v reflect.Value) string {
 	switch v.Kind() {
 	case reflect.Invalid:
