@@ -8,19 +8,19 @@ func ParseStructType(typ reflect.Type) *Field {
 	f := newField(typ)
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
-		sf := ParseStructField(field)
+		sf := f.ParseStructField(field)
 		f.subFields = append(f.subFields, sf)
 	}
 	return f
 }
 
 ///
-func ParseStructField(structfield reflect.StructField) *Field {
+func (a *Field) ParseStructField(structfield reflect.StructField) *Field {
 	f := newField(structfield.Type)
 	f.fieldName = structfield.Name
 	f.fieldType = structfield.Type
 	f.isAnon = structfield.Anonymous
-	f.fieldIndex = structfield.Index
+	f.fieldIndex = append(a.fieldIndex, structfield.Index...)
 	f.fieldTypeName = structfield.Type.Name()
 	///
 	f.tags = parseTags(string(structfield.Tag))
@@ -30,6 +30,8 @@ func ParseStructField(structfield reflect.StructField) *Field {
 	has := TypMethod(structfield.Type, "UnmarshalJSON")
 	f.hasUnmarshal = has
 	f.parseType(structfield.Type)
+	///addto field list
+	a.subFields = append(a.subFields, f)
 	return f
 }
 

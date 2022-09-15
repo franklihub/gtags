@@ -25,10 +25,11 @@ type nested struct {
 func Test_Field_combin(t *testing.T) {
 	typ := reflect.TypeOf(combin{})
 	fs := []*Field{}
+	f := newField(typ)
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
-		f := ParseStructField(field)
-		fs = append(fs, f)
+		subf := f.ParseStructField(field)
+		fs = append(fs, subf)
 	}
 
 	assert.Equal(t, fs[0].fieldType.Kind(), reflect.Int)
@@ -39,10 +40,11 @@ func Test_Field_combin(t *testing.T) {
 func Test_Field_nested(t *testing.T) {
 	typ := reflect.TypeOf(nested{})
 	fs := []*Field{}
+	f := newField(typ)
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
-		f := ParseStructField(field)
-		fs = append(fs, f)
+		subf := f.ParseStructField(field)
+		fs = append(fs, subf)
 	}
 	///
 	assert.Equal(t, len(fs), 2)
@@ -80,10 +82,11 @@ func Test_Field_slice(t *testing.T) {
 	// AccessList           string
 	typ := reflect.TypeOf(sliceStruct{})
 	fs := []*Field{}
+	f := newField(typ)
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
-		f := ParseStructField(field)
-		fs = append(fs, f)
+		subf := f.ParseStructField(field)
+		fs = append(fs, subf)
 	}
 	///
 	assert.Equal(t, len(fs), 2)
@@ -122,4 +125,34 @@ func Test_ReflectKind(t *testing.T) {
 	fmt.Println("relect.TypeOf.Kind:", typ.Kind())
 	fmt.Println("relect.TypeOf.Elem.Type:", typ.Elem().Kind())
 	fmt.Println("relect.TypeOf.Elem.Elem.Type:", typ.Elem().Elem().Kind())
+}
+
+type URL struct {
+	Addr string `json:"addr"`
+	Port int    `json:"port" d:"1234"`
+}
+type Db struct {
+	URL
+	Pass string `json:"pass"`
+}
+type Cfg struct {
+	Db
+	Name string `json:"name"`
+}
+
+func Test_AnonAnon(t *testing.T) {
+	typ := reflect.TypeOf(Cfg{})
+	fs := []*Field{}
+	f := newField(typ)
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
+		subf := f.ParseStructField(field)
+		fs = append(fs, subf)
+	}
+	//
+	assert.Equal(t, f.subFields[0].Name(), "Db")
+	assert.Equal(t, f.subFields[0].subFields[0].Name(), "URL")
+	assert.Equal(t, f.subFields[0].subFields[0].subFields[0].Alias(), "addr")
+	assert.Equal(t, f.subFields[0].subFields[0].subFields[1].Alias(), "port")
+
 }

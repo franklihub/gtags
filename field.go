@@ -38,7 +38,7 @@ func (a *Field) Fields() []*Field {
 	}
 	return fs
 }
-func (a *Field) AnonFields() []*Field {
+func (a *Field) AnonNesteds() []*Field {
 	fs := []*Field{}
 	for _, f := range a.subFields {
 		if !f.IsStruct() {
@@ -48,8 +48,7 @@ func (a *Field) AnonFields() []*Field {
 			continue
 		}
 		///
-		fss := f.Fields()
-		fs = append(fs, fss...)
+		fs = append(fs, f)
 	}
 	return fs
 }
@@ -192,11 +191,8 @@ func (a *Field) addStruct(typ reflect.Type) {
 
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
-		f := ParseStructField(field)
-		//
-		f.fieldIndex = append(a.fieldIndex, f.fieldIndex...)
+		a.ParseStructField(field)
 		///
-		a.subFields = append(a.subFields, f)
 		///
 	}
 }
