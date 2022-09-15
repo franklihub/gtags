@@ -133,11 +133,13 @@ type URL struct {
 }
 type Db struct {
 	URL
-	Pass string `json:"pass"`
+	Exurl URL    `json:"exurl"`
+	Pass  string `json:"pass" d:"1234"`
 }
 type Cfg struct {
 	Db
 	Name string `json:"name"`
+	Mgo  Db     `json:"mgo"`
 }
 
 func Test_AnonAnon(t *testing.T) {
@@ -155,4 +157,5 @@ func Test_AnonAnon(t *testing.T) {
 	assert.Equal(t, f.subFields[0].subFields[0].subFields[0].Alias(), "addr")
 	assert.Equal(t, f.subFields[0].subFields[0].subFields[1].Alias(), "port")
 
+	fmt.Println(f.DMap("d"))
 }

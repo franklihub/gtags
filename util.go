@@ -3,8 +3,31 @@ package gtags
 import (
 	"reflect"
 	"strconv"
+	"strings"
 )
 
+func mergermap(a, b map[string]any) {
+	for k, v := range b {
+		if vv, ok := a[k]; !ok {
+			a[k] = v
+		} else {
+			if _, ok := vv.(map[string]any); ok {
+				if _, ok := v.(map[string]any); ok {
+					mergermap(vv.(map[string]any), v.(map[string]any))
+				}
+			}
+		}
+	}
+}
+func tagDVal(tag *Tag) string {
+	d := tag.Val()
+	o := tag.Opts()
+
+	if len(o) > 0 {
+		d = d + "," + strings.Join(o, ",")
+	}
+	return d
+}
 func TypMethod(typ reflect.Type, method string) bool {
 	ok := ptrMethod(typ, method)
 	if !ok {

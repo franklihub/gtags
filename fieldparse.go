@@ -93,3 +93,28 @@ func (a *Field) parseType(typ reflect.Type) {
 }
 
 ///
+
+func (a *Field) DMap(dtag string) map[string]any {
+	dmap := map[string]any{}
+
+	for _, sf := range a.subFields {
+		if sf.IsStruct() {
+			if sf.IsAnon() {
+				ddmap := sf.DMap(dtag)
+				mergermap(dmap, ddmap)
+			} else {
+				if sf.Alias() != "" {
+					dmap[sf.Alias()] = sf.DMap(dtag)
+				}
+			}
+		} else {
+			if sf.Alias() != "" {
+				d := tagDVal(sf.Tags().Get(dtag))
+				if d != "" {
+					dmap[sf.Alias()] = d
+				}
+			}
+		}
+	}
+	return dmap
+}
