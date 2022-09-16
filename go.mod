@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/ethereum/go-ethereum v1.10.23
+	github.com/gogf/gf v1.16.9
 	gotest.tools v2.2.0+incompatible
 )
 

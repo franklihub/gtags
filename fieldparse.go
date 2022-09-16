@@ -9,8 +9,7 @@ func ParseStructType(typ reflect.Type) *Field {
 	f := newField(typ)
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
-		sf := f.ParseStructField(field)
-		f.subFields = append(f.subFields, sf)
+		f.ParseStructField(field)
 	}
 	return f
 }
@@ -105,7 +104,15 @@ func (a *Field) DMap(dtag string) map[string]any {
 				MergerMap(dmap, ddmap)
 			} else {
 				if sf.Alias() != "" {
-					dmap[sf.Alias()] = sf.DMap(dtag)
+					d := sf.DMap(dtag)
+					if len(d) > 0 {
+						dmap[sf.Alias()] = sf.DMap(dtag)
+					} else {
+						d := sf.Tags().Get(dtag).Val()
+						if d != "" {
+							dmap[sf.Alias()] = d
+						}
+					}
 				}
 			}
 		} else if sf.IsSlice() {
@@ -116,12 +123,10 @@ func (a *Field) DMap(dtag string) map[string]any {
 					d = d + "," + strings.Join(os, ",")
 					s := strings.Split(d, ",")
 					if len(s) > 0 {
-						dv := "["
+						dv := []string{}
 						for _, v := range s {
-							dv = dv + v + ","
+							dv = append(dv, v)
 						}
-						dv = strings.TrimRight(dv, ",")
-						dv = dv + "]"
 						dmap[sf.Alias()] = dv
 					}
 				}
@@ -136,7 +141,8 @@ func (a *Field) DMap(dtag string) map[string]any {
 			if sf.Alias() != "" {
 				d := sf.Tags().Get(dtag).Val()
 				if d != "" {
-					dmap[sf.Alias()] = d
+					v, _ := convKind(sf.fieldType.Kind(), d)
+					dmap[sf.Alias()] = v
 				}
 			}
 		}

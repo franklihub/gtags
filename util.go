@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/gogf/gf/util/gconv"
 )
 
 func MergerMap(a, b map[string]any) {
@@ -52,25 +54,51 @@ func ptrMethod(typ reflect.Type, method string) bool {
 	return ok
 }
 
-func formatValue(v reflect.Value) string {
-	switch v.Kind() {
-	case reflect.Invalid:
-		return "invalid"
-	case reflect.Int, reflect.Int8, reflect.Int16,
-		reflect.Int32, reflect.Int64:
-		return strconv.FormatInt(v.Int(), 10)
-	case reflect.Uint, reflect.Uint8, reflect.Uint16,
-		reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		return strconv.FormatUint(v.Uint(), 10)
-	// ...floating-point and complex cases omitted for brevity...
+func convKind(kind reflect.Kind, str string) (any, error) {
+	var val any = str
+	var err error
+	switch kind {
+	case reflect.Int:
+		i, err := strconv.ParseInt(str, 10, 0)
+		if err != nil {
+		} else {
+			val = int(i)
+		}
+	case reflect.Int64:
+		i, err := strconv.ParseInt(str, 10, 0)
+		if err != nil {
+		} else {
+			val = i
+		}
+	case reflect.Uint:
+		i, err := strconv.ParseUint(str, 10, 0)
+		if err != nil {
+		} else {
+			val = i
+		}
+	case reflect.Uint64:
+		i, err := strconv.ParseUint(str, 10, 0)
+		if err != nil {
+		} else {
+			val = uint(i)
+		}
+	case reflect.Float32:
+		val = gconv.Float32(str)
+	case reflect.Float64:
+		val = gconv.Float64(str)
 	case reflect.Bool:
-		return strconv.FormatBool(v.Bool())
+		val = gconv.Bool(str)
 	case reflect.String:
-		return strconv.Quote(v.String())
-	case reflect.Chan, reflect.Func, reflect.Ptr, reflect.Slice, reflect.Map:
-		return v.Type().String() + " 0x" +
-			strconv.FormatUint(uint64(v.Pointer()), 16)
-	default: // reflect.Array, reflect.Struct, reflect.Interface
-		return v.Type().String() + " value"
+		val = str
+	case reflect.Slice:
+		v := strings.Split(str, ",")
+		if v[0] != "" {
+			val = v
+		}
+	case reflect.Struct:
+	case reflect.Array:
+	default:
+		panic(kind.String())
 	}
+	return val, err
 }
