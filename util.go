@@ -6,14 +6,14 @@ import (
 	"strings"
 )
 
-func mergermap(a, b map[string]any) {
+func MergerMap(a, b map[string]any) {
 	for k, v := range b {
 		if vv, ok := a[k]; !ok {
 			a[k] = v
 		} else {
 			if _, ok := vv.(map[string]any); ok {
 				if _, ok := v.(map[string]any); ok {
-					mergermap(vv.(map[string]any), v.(map[string]any))
+					MergerMap(vv.(map[string]any), v.(map[string]any))
 				}
 			}
 		}

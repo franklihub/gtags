@@ -128,18 +128,20 @@ func Test_ReflectKind(t *testing.T) {
 }
 
 type URL struct {
-	Addr string `json:"addr"`
-	Port int    `json:"port" d:"1234"`
+	Addr     string   `json:"addr"`
+	Port     int      `json:"port" d:"1234"`
+	Protocol []string `json:"protocol" d:"tpc,udp,http"`
 }
 type Db struct {
 	URL
-	Exurl URL    `json:"exurl"`
-	Pass  string `json:"pass" d:"1234"`
+	Pass string   `json:"pass" d:"1234"`
+	Kind []string `json:"kind"`
 }
 type Cfg struct {
 	Db
-	Name string `json:"name"`
-	Mgo  Db     `json:"mgo"`
+	Name  string `json:"name"`
+	ExRcp URL    `json:"exurl"`
+	// Cluster []Db   `json:"cluster"`
 }
 
 func Test_AnonAnon(t *testing.T) {
@@ -156,6 +158,7 @@ func Test_AnonAnon(t *testing.T) {
 	assert.Equal(t, f.subFields[0].subFields[0].Name(), "URL")
 	assert.Equal(t, f.subFields[0].subFields[0].subFields[0].Alias(), "addr")
 	assert.Equal(t, f.subFields[0].subFields[0].subFields[1].Alias(), "port")
+	assert.Equal(t, f.subFields[0].subFields[0].subFields[2].Alias(), "protocol")
 
 	fmt.Println(f.DMap("d"))
 }

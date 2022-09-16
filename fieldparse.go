@@ -2,6 +2,7 @@ package gtags
 
 import (
 	"reflect"
+	"strings"
 )
 
 func ParseStructType(typ reflect.Type) *Field {
@@ -101,15 +102,39 @@ func (a *Field) DMap(dtag string) map[string]any {
 		if sf.IsStruct() {
 			if sf.IsAnon() {
 				ddmap := sf.DMap(dtag)
-				mergermap(dmap, ddmap)
+				MergerMap(dmap, ddmap)
 			} else {
 				if sf.Alias() != "" {
 					dmap[sf.Alias()] = sf.DMap(dtag)
 				}
 			}
+		} else if sf.IsSlice() {
+			if sf.fieldType.Elem().Kind() == reflect.String {
+				d := sf.Tags().Get(dtag).Val()
+				os := sf.Tags().Get(dtag).Opts()
+				if d != "" && len(os) > 0 {
+					d = d + "," + strings.Join(os, ",")
+					s := strings.Split(d, ",")
+					if len(s) > 0 {
+						dv := "["
+						for _, v := range s {
+							dv = dv + v + ","
+						}
+						dv = strings.TrimRight(dv, ",")
+						dv = dv + "]"
+						dmap[sf.Alias()] = dv
+					}
+				}
+			} else {
+				panic("not supply []struct")
+				// dv := sf.DMap(dtag)
+				// if len(dv) > 0 {
+				// 	dmap[sf.Alias()] = []any{dv}
+				// }
+			}
 		} else {
 			if sf.Alias() != "" {
-				d := tagDVal(sf.Tags().Get(dtag))
+				d := sf.Tags().Get(dtag).Val()
 				if d != "" {
 					dmap[sf.Alias()] = d
 				}
