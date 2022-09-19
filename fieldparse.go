@@ -142,8 +142,8 @@ func (a *Field) DMap(dtag string) map[string]any {
 			if sf.Alias() != "" {
 				d := sf.Tags().Get(dtag).Val()
 				if d != "" {
-					v, _ := convKind(sf.fieldType.Kind(), d)
-					dmap[sf.Alias()] = v
+					// v, _ := convKind(sf.fieldType.Kind(), d)
+					dmap[sf.Alias()] = d
 				}
 			}
 		}

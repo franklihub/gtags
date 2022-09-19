@@ -2,10 +2,7 @@ package gtags
 
 import (
 	"reflect"
-	"strconv"
 	"strings"
-
-	"github.com/gogf/gf/util/gconv"
 )
 
 func MergerMap(a, b map[string]any) {
@@ -54,51 +51,51 @@ func ptrMethod(typ reflect.Type, method string) bool {
 	return ok
 }
 
-func convKind(kind reflect.Kind, str string) (any, error) {
-	var val any = str
-	var err error
-	switch kind {
-	case reflect.Int:
-		i, err := strconv.ParseInt(str, 10, 0)
-		if err != nil {
-		} else {
-			val = int(i)
-		}
-	case reflect.Int64:
-		i, err := strconv.ParseInt(str, 10, 0)
-		if err != nil {
-		} else {
-			val = i
-		}
-	case reflect.Uint:
-		i, err := strconv.ParseUint(str, 10, 0)
-		if err != nil {
-		} else {
-			val = i
-		}
-	case reflect.Uint64:
-		i, err := strconv.ParseUint(str, 10, 0)
-		if err != nil {
-		} else {
-			val = uint(i)
-		}
-	case reflect.Float32:
-		val = gconv.Float32(str)
-	case reflect.Float64:
-		val = gconv.Float64(str)
-	case reflect.Bool:
-		val = gconv.Bool(str)
-	case reflect.String:
-		val = str
-	case reflect.Slice:
-		v := strings.Split(str, ",")
-		if v[0] != "" {
-			val = v
-		}
-	case reflect.Struct:
-	case reflect.Array:
-	default:
-		panic(kind.String())
-	}
-	return val, err
-}
+// func convKind(kind reflect.Kind, str string) (any, error) {
+// 	var val any = str
+// 	var err error
+// 	switch kind {
+// 	case reflect.Int:
+// 		i, err := strconv.ParseInt(str, 10, 0)
+// 		if err != nil {
+// 		} else {
+// 			val = int(i)
+// 		}
+// 	case reflect.Int64:
+// 		i, err := strconv.ParseInt(str, 10, 0)
+// 		if err != nil {
+// 		} else {
+// 			val = i
+// 		}
+// 	case reflect.Uint:
+// 		i, err := strconv.ParseUint(str, 10, 0)
+// 		if err != nil {
+// 		} else {
+// 			val = i
+// 		}
+// 	case reflect.Uint64:
+// 		i, err := strconv.ParseUint(str, 10, 0)
+// 		if err != nil {
+// 		} else {
+// 			val = uint(i)
+// 		}
+// 	case reflect.Float32:
+// 		val = gconv.Float32(str)
+// 	case reflect.Float64:
+// 		val = gconv.Float64(str)
+// 	case reflect.Bool:
+// 		val = gconv.Bool(str)
+// 	case reflect.String:
+// 		val = str
+// 	case reflect.Slice:
+// 		v := strings.Split(str, ",")
+// 		if v[0] != "" {
+// 			val = v
+// 		}
+// 	case reflect.Struct:
+// 	case reflect.Array:
+// 	default:
+// 		panic(kind.String())
+// 	}
+// 	return val, err
+// }
