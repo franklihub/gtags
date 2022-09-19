@@ -131,7 +131,8 @@ func (a *Field) DMap(dtag string) map[string]any {
 					}
 				}
 			} else {
-				panic("not supply []struct")
+
+				panic("not supply slice:" + sf.fieldType.Elem().Kind().String())
 				// dv := sf.DMap(dtag)
 				// if len(dv) > 0 {
 				// 	dmap[sf.Alias()] = []any{dv}
