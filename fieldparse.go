@@ -116,27 +116,18 @@ func (a *Field) DMap(dtag string) map[string]any {
 				}
 			}
 		} else if sf.IsSlice() {
-			if sf.fieldType.Elem().Kind() == reflect.String {
-				d := sf.Tags().Get(dtag).Val()
-				os := sf.Tags().Get(dtag).Opts()
-				if d != "" && len(os) > 0 {
-					d = d + "," + strings.Join(os, ",")
-					s := strings.Split(d, ",")
-					if len(s) > 0 {
-						dv := []string{}
-						for _, v := range s {
-							dv = append(dv, v)
-						}
-						dmap[sf.Alias()] = dv
+			d := sf.Tags().Get(dtag).Val()
+			os := sf.Tags().Get(dtag).Opts()
+			if d != "" && len(os) > 0 {
+				d = d + "," + strings.Join(os, ",")
+				s := strings.Split(d, ",")
+				if len(s) > 0 {
+					dv := []string{}
+					for _, v := range s {
+						dv = append(dv, v)
 					}
+					dmap[sf.Alias()] = dv
 				}
-			} else {
-
-				panic("not supply slice:" + sf.fieldType.Elem().Kind().String())
-				// dv := sf.DMap(dtag)
-				// if len(dv) > 0 {
-				// 	dmap[sf.Alias()] = []any{dv}
-				// }
 			}
 		} else {
 			if sf.Alias() != "" {
