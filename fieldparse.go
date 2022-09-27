@@ -15,7 +15,10 @@ func ParseStructType(typ reflect.Type) *Field {
 }
 
 ///
-func (a *Field) ParseStructField(structfield reflect.StructField) *Field {
+func (a *Field) ParseStructField(structfield reflect.StructField) {
+	if structfield.Name[0] == strings.ToLower(structfield.Name)[0] {
+		return
+	}
 	f := newField(structfield.Type)
 	f.fieldName = structfield.Name
 	f.fieldType = structfield.Type
@@ -32,7 +35,6 @@ func (a *Field) ParseStructField(structfield reflect.StructField) *Field {
 	f.parseType(structfield.Type)
 	///addto field list
 	a.subFields = append(a.subFields, f)
-	return f
 }
 
 //
